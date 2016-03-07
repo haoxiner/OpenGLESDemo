@@ -22,7 +22,10 @@ public class ObjLoader {
         String line;
         TriangleMesh mesh = null;
         Vertex vertex = null;
+
         List<Float> vertices = new ArrayList<>();
+        List<Float> uvCoordinates = new ArrayList<>();
+        List<Float> normals = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
 
         try {
@@ -36,18 +39,31 @@ public class ObjLoader {
                         vertices.add(Float.parseFloat(str));
                     }
                 } else if (line.startsWith("vn ")) {
-
+                    String[] floatStr = line.substring(2).split(" ");
+                    for (String str : floatStr) {
+                        normals.add(Float.parseFloat(str));
+                    }
                 } else if (line.startsWith("vt ")) {
-
+                    String[] floatStr = line.substring(2).split(" ");
+                    for (String str : floatStr) {
+                        uvCoordinates.add(Float.parseFloat(str));
+                    }
                 } else if (line.startsWith("f ")) {
                     String[] vertexStr = line.substring(2).split(" ");
                     for (String str : vertexStr) {
                         indices.add(Integer.parseInt(str.split("/")[0]) - 1);
                     }
                 } else if (line.startsWith("g")) {
+                    if (line.startsWith("g default")) {
+                        vertices.clear();
+                        indices.clear();
+                    } else {
 
-                } else {
-
+                    }
+                } else if (line.startsWith("usemtl ")) {
+//                    String mtlName = line.substring(7);
+//                    int mtlId;
+//                    mesh = new TriangleMesh();
                 }
             }
         } catch (IOException e) {
