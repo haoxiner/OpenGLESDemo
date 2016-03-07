@@ -1,0 +1,11 @@
+# This file uses centimeters as units for non-parametric coordinates.
+
+g default
+v 1.0f 1.0f 0.0f
+v 1.0f -1.0f 0.0f
+v -1.0f -1.0f 0.0f
+v -1.0f 1.0f 0.0f
+s off
+g pPlane1
+f 1// 2// 4//
+f 2// 3// 4//
