@@ -1,9 +1,12 @@
 uniform mat4 uMVP;
-//attribute vec3 vColor;
 attribute vec3 vPosition;
-varying vec3 color;
+attribute vec3 vNormal;
+attribute vec2 vUv;
+varying vec3 fragPos;
+varying vec3 normal;
 void main()
 {
   gl_Position = uMVP * vec4(vPosition,1.0);
-  color = vec3(1.0,0.0,0.0);
+  fragPos = vPosition;
+  normal = vNormal;
 }

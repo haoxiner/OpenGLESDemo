@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,6 +14,8 @@ import java.util.List;
  */
 public class TriangleMesh {
     private int vertexBufferId;
+
+    private List<Integer> vertexBufferIdList;
     private List<Integer> indexBufferIdList;
     private List<Integer> normalAndUvBufferIdList;
     private List<Integer> materialIdList;
@@ -25,30 +28,67 @@ public class TriangleMesh {
     private final int FLOAT_PER_NORMAL = 3;
     private final int FLOAT_PER_UV = 2;
 
-    TriangleMesh() {
-        int[] bufferId = new int[1];
-        glGenBuffers(1, bufferId, 0);
-        vertexBufferId = bufferId[0];
+    public TriangleMesh() {
+
+        vertexBufferIdList = new ArrayList<>();
+        normalAndUvBufferIdList = new ArrayList<>();
+        materialIdList = new ArrayList<>();
+        vertexCountList = new ArrayList<>();
     }
 
-    public void draw(float[] mvp, int positionHandle, int normalHandle, int uvHandle) {
-        glEnableVertexAttribArray(positionHandle);
-        glEnableVertexAttribArray(normalHandle);
-        glEnableVertexAttribArray(uvHandle);
+    public void draw(float[] mvp, int positionHandle) {
 
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-        glVertexAttribPointer(positionHandle, FLOAT_PER_VERTEX, GL_FLOAT, false, 0, 0);
+    }
 
-        for (int i = 0; i < indexBufferIdList.size(); i++) {
-            glBindBuffer(GL_ARRAY_BUFFER, normalAndUvBufferIdList.get(i));
-            glVertexAttribPointer(normalHandle, FLOAT_PER_NORMAL, GL_FLOAT, false, FLOAT_PER_UV, 0);
-            glVertexAttribPointer(uvHandle, FLOAT_PER_UV, GL_FLOAT, false, FLOAT_PER_NORMAL, FLOAT_PER_NORMAL);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferIdList.get(i));
-            glDrawElements(GL_TRIANGLES, vertexCountList.get(i), GL_UNSIGNED_INT, 0);
+    public void draw(int positionHandle, int uvHandle, int normalHandle) {
+
+        for (int i = 0; i < vertexBufferIdList.size(); i++) {
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBufferIdList.get(i));
+            glEnableVertexAttribArray(positionHandle);
+            glEnableVertexAttribArray(normalHandle);
+            glEnableVertexAttribArray(uvHandle);
+            glVertexAttribPointer(positionHandle, FLOAT_PER_VERTEX, GL_FLOAT, false, (FLOAT_PER_VERTEX + FLOAT_PER_UV + FLOAT_PER_NORMAL) * BYTE_PER_FLOAT, 0);
+            glVertexAttribPointer(uvHandle, FLOAT_PER_UV, GL_FLOAT, false, (FLOAT_PER_VERTEX + FLOAT_PER_UV + FLOAT_PER_NORMAL) * BYTE_PER_FLOAT, FLOAT_PER_VERTEX * BYTE_PER_FLOAT);
+            glVertexAttribPointer(normalHandle, FLOAT_PER_NORMAL, GL_FLOAT, false, (FLOAT_PER_VERTEX + FLOAT_PER_UV + FLOAT_PER_NORMAL) * BYTE_PER_FLOAT, (FLOAT_PER_VERTEX + FLOAT_PER_UV) * BYTE_PER_FLOAT);
+            glDrawArrays(GL_TRIANGLES, 0, vertexCountList.get(i));
+            glDisableVertexAttribArray(uvHandle);
+            glDisableVertexAttribArray(normalHandle);
+            glDisableVertexAttribArray(positionHandle);
         }
-        glDisableVertexAttribArray(uvHandle);
-        glDisableVertexAttribArray(normalHandle);
-        glDisableVertexAttribArray(positionHandle);
+    }
+
+    public void commit(List<Float> vertices, List<Float> uvCoordinates, List<Float> normals) {
+        int[] bufferId = new int[1];
+        glGenBuffers(1, bufferId, 0);
+        vertexBufferIdList.add(bufferId[0]);
+
+        int bufferSize = (vertices.size() + normals.size() + uvCoordinates.size()) * BYTE_PER_FLOAT;
+        FloatBuffer buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+        float[] tmp = new float[vertices.size() + normals.size() + uvCoordinates.size()];
+        for (int index = 0, vertexIndex = 0, uvIndex = 0, normalIndex = 0; index < tmp.length; ) {
+            for (int i = 0; i < 3; i++) {
+                tmp[index] = vertices.get(vertexIndex);
+                ++index;
+                ++vertexIndex;
+            }
+            for (int i = 0; i < 2; i++) {
+                tmp[index] = uvCoordinates.get(uvIndex);
+                ++index;
+                ++uvIndex;
+            }
+            for (int i = 0; i < 3; i++) {
+                tmp[index] = normals.get(normalIndex);
+                ++index;
+                ++normalIndex;
+            }
+        }
+
+        buffer.put(tmp).position(0);
+        glBindBuffer(GL_ARRAY_BUFFER, bufferId[0]);
+        glBufferData(GL_ARRAY_BUFFER, bufferSize, buffer, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        vertexCountList.add(vertices.size() / 3);
     }
 
     public void commitVertices(List<Float> vertices) {
@@ -86,13 +126,15 @@ public class TriangleMesh {
         FloatBuffer buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder()).asFloatBuffer();
         float[] tmp = new float[normals.size() + uvCoordinates.size()];
         for (int index = 0, normalIndex = 0, uvIndex = 0; index < tmp.length; ) {
-            for (; normalIndex < normalIndex + 3; normalIndex++) {
+            for (int i = 0; i < 3; i++) {
                 tmp[index] = normals.get(normalIndex);
                 ++index;
+                ++normalIndex;
             }
-            for (; uvIndex < uvIndex + 2; uvIndex++) {
+            for (int i = 0; i < 2; i++) {
                 tmp[index] = uvCoordinates.get(uvIndex);
                 ++index;
+                ++uvIndex;
             }
         }
         buffer.put(tmp).position(0);
