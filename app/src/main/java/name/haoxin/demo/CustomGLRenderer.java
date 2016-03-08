@@ -6,7 +6,6 @@ import android.opengl.Matrix;
 import static android.opengl.GLES20.*;
 
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 
 import java.io.InputStream;
 
@@ -20,10 +19,10 @@ import name.haoxin.demo.util.TextResourceReader;
  * Created by hx on 16/3/4.
  */
 public class CustomGLRenderer implements GLSurfaceView.Renderer {
-    private final float[] mvpMatrix = new float[16];
+    private final float[] worldToCamera = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
-    private final float[] modelMatrix = new float[16];
+    private final float[] worldToModel = new float[16];
     private float angle = 0;
 
     private Model model;
@@ -44,9 +43,9 @@ public class CustomGLRenderer implements GLSurfaceView.Renderer {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-//        glEnable(GL_CULL_FACE);
-//        glFrontFace(GL_CCW);
-//        glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -61,15 +60,15 @@ public class CustomGLRenderer implements GLSurfaceView.Renderer {
         glLinkProgram(program);
         model.setShaderProgram(program);
 
-        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.setIdentityM(worldToModel, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Matrix.setLookAtM(viewMatrix, 0, 0, 0, 2, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-        model.draw(mvpMatrix, modelMatrix);
+        Matrix.multiplyMM(worldToCamera, 0, projectionMatrix, 0, viewMatrix, 0);
+        model.draw(worldToCamera, worldToModel);
     }
 
     @Override
@@ -107,15 +106,15 @@ public class CustomGLRenderer implements GLSurfaceView.Renderer {
         }
         float angle = (float) (Math.acos(Math.min(v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2], 1.0)) / Math.PI * 180);
 
-        Matrix.invertM(inverseModelMat, 0, modelMatrix, 0);
+        Matrix.invertM(inverseModelMat, 0, worldToModel, 0);
         Matrix.multiplyMV(a, 0, inverseModelMat, 0, v0, 0);
         Matrix.multiplyMV(b, 0, inverseModelMat, 0, v1, 0);
 
-        System.arraycopy(modelMatrix, 0, mat, 0, modelMatrix.length);
+        System.arraycopy(worldToModel, 0, mat, 0, worldToModel.length);
         float crossX = a[1] * b[2] - a[2] * b[1];
         float crossY = a[2] * b[0] - a[0] * b[2];
         float crossZ = a[0] * b[1] - a[1] * b[0];
-        Matrix.rotateM(modelMatrix, 0, mat, 0, angle, crossX, crossY, crossZ);
+        Matrix.rotateM(worldToModel, 0, mat, 0, angle, crossX, crossY, crossZ);
 
     }
 

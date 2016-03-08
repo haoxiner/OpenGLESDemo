@@ -2,7 +2,6 @@ package name.haoxin.demo;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -39,8 +38,6 @@ public class CustomGLSurfaceView extends GLSurfaceView {
         int h = getHeight();
         float currentX = (2 * x - w) / (float) (w);
         float currentY = (h - 2 * y) / (float) (h);
-
-//        Log.e("mouse",String.valueOf(currentX) + ", " + String.valueOf(currentY));
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:

@@ -2,10 +2,6 @@ package name.haoxin.demo;
 
 import static android.opengl.GLES20.*;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +13,8 @@ public class Model {
     private int positionHandle;
     private int normalHandle;
     private int uvHandle;
-    private int mvpHandle;
-    private int modelHandle;
+    private int worldToCameraHandle;
+    private int modelToWorldHandle;
 
     private List<TriangleMesh> meshes;
 
@@ -33,16 +29,16 @@ public class Model {
     public void setShaderProgram(int program) {
         shaderProgram = program;
         positionHandle = glGetAttribLocation(shaderProgram, "vPosition");
-        mvpHandle = glGetUniformLocation(shaderProgram, "uMVP");
+        worldToCameraHandle = glGetUniformLocation(shaderProgram, "uMVP");
         normalHandle = glGetAttribLocation(shaderProgram, "vNormal");
         uvHandle = glGetAttribLocation(shaderProgram, "vUv");
-        modelHandle = glGetUniformLocation(shaderProgram, "uModel");
+        modelToWorldHandle = glGetUniformLocation(shaderProgram, "uModel");
     }
 
-    public void draw(float[] mvp, float[] model) {
+    public void draw(float[] worldToCamera, float[] modelToWorld) {
         glUseProgram(shaderProgram);
-        glUniformMatrix4fv(mvpHandle, 1, false, mvp, 0);
-        glUniformMatrix4fv(modelHandle, 1, false, model, 0);
+        glUniformMatrix4fv(worldToCameraHandle, 1, false, worldToCamera, 0);
+        glUniformMatrix4fv(modelToWorldHandle, 1, false, modelToWorld, 0);
         for (TriangleMesh m : meshes) {
             m.draw(positionHandle, uvHandle, normalHandle);
         }
