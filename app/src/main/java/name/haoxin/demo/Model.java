@@ -29,7 +29,7 @@ public class Model {
     public void setShaderProgram(int program) {
         shaderProgram = program;
         positionHandle = glGetAttribLocation(shaderProgram, "vPosition");
-        worldToCameraHandle = glGetUniformLocation(shaderProgram, "uMVP");
+        worldToCameraHandle = glGetUniformLocation(shaderProgram, "uCamera");
         normalHandle = glGetAttribLocation(shaderProgram, "vNormal");
         uvHandle = glGetAttribLocation(shaderProgram, "vUv");
         modelToWorldHandle = glGetUniformLocation(shaderProgram, "uModel");
