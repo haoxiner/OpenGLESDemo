@@ -18,6 +18,7 @@ public class Model {
     private int normalHandle;
     private int uvHandle;
     private int mvpHandle;
+    private int modelHandle;
 
     private List<TriangleMesh> meshes;
 
@@ -35,11 +36,13 @@ public class Model {
         mvpHandle = glGetUniformLocation(shaderProgram, "uMVP");
         normalHandle = glGetAttribLocation(shaderProgram, "vNormal");
         uvHandle = glGetAttribLocation(shaderProgram, "vUv");
+        modelHandle = glGetUniformLocation(shaderProgram, "uModel");
     }
 
-    public void draw(float[] mvp) {
+    public void draw(float[] mvp, float[] model) {
         glUseProgram(shaderProgram);
         glUniformMatrix4fv(mvpHandle, 1, false, mvp, 0);
+        glUniformMatrix4fv(modelHandle, 1, false, model, 0);
         for (TriangleMesh m : meshes) {
             m.draw(positionHandle, uvHandle, normalHandle);
         }

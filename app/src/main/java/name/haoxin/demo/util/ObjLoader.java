@@ -78,12 +78,12 @@ public class ObjLoader {
                         String[] valueArray = str.split("/");
                         if (valueArray.length > 0 && valueArray[0].length() > 0) {
                             int value = Integer.parseInt(valueArray[0]);
+                            int pos = 0;
                             if (value > 0) {
-                                value--;
+                                pos = (value - 1) * 3;
                             } else {
-                                value += verticesTable.size();
+                                pos = value * 3 + verticesTable.size();
                             }
-                            int pos = value * 3;
                             vertices.add(verticesTable.get(pos));
                             pos++;
                             vertices.add(verticesTable.get(pos));
@@ -92,24 +92,24 @@ public class ObjLoader {
                         }
                         if (valueArray.length > 1 && valueArray[1].length() > 0) {
                             int value = Integer.parseInt(valueArray[1]);
+                            int pos = 0;
                             if (value > 0) {
-                                value--;
+                                pos = (value - 1) * 2;
                             } else {
-                                value += uvCoordinatesTable.size();
+                                pos = value * 2 + uvCoordinatesTable.size();
                             }
-                            int pos = value * 2;
                             uvCoordinates.add(uvCoordinatesTable.get(pos));
                             pos++;
                             uvCoordinates.add(uvCoordinatesTable.get(pos));
                         }
                         if (valueArray.length > 2 && valueArray[2].length() > 0) {
                             int value = Integer.parseInt(valueArray[2]);
+                            int pos = 0;
                             if (value > 0) {
-                                value--;
+                                pos = (value - 1) * 3;
                             } else {
-                                value += normalsTable.size();
+                                pos = value * 3 + normalsTable.size();
                             }
-                            int pos = value * 3;
                             normals.add(normalsTable.get(pos));
                             pos++;
                             normals.add(normalsTable.get(pos));

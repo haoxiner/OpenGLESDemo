@@ -2,29 +2,30 @@ package name.haoxin.demo;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 
 /**
  * Created by hx on 16/3/4.
  */
 public class CustomGLSurfaceView extends GLSurfaceView {
-    private final CustomGLRenderer m_renderer;
+    private final CustomGLRenderer glRenderer;
 
-    public CustomGLSurfaceView(Context context){
+    public CustomGLSurfaceView(Context context) {
         super(context);
         setEGLContextClientVersion(2);
-        m_renderer = new CustomGLRenderer(context);
+        glRenderer = new CustomGLRenderer(context);
 
-        setRenderer(m_renderer);
+        setRenderer(glRenderer);
 
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
-    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
-    private float mPreviousX;
-    private float mPreviousY;
+    private float previousX;
+    private float previousY;
+    private float[] v0 = new float[4];
+    private float[] v1 = new float[4];
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -34,33 +35,29 @@ public class CustomGLSurfaceView extends GLSurfaceView {
 
         float x = e.getX();
         float y = e.getY();
+        int w = getWidth();
+        int h = getHeight();
+        float currentX = (2 * x - w) / (float) (w);
+        float currentY = (h - 2 * y) / (float) (h);
+
+//        Log.e("mouse",String.valueOf(currentX) + ", " + String.valueOf(currentY));
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
-
-                float dx = x - mPreviousX;
-                float dy = y - mPreviousY;
-
-                // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
-                    dx = dx * -1 ;
-                }
-
-
-
-                // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
-                    dy = dy * -1 ;
-                }
-
-                m_renderer.setAngle(
-                        m_renderer.getAngle() +
-                                ((dx + dy) * TOUCH_SCALE_FACTOR));
+                v0[0] = previousX;
+                v0[1] = previousY;
+                v1[0] = currentX;
+                v1[1] = currentY;
+                glRenderer.rotateArcball(v0, v1);
                 requestRender();
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                break;
+            default:
         }
 
-        mPreviousX = x;
-        mPreviousY = y;
+        previousX = currentX;
+        previousY = currentY;
         return true;
     }
 }
