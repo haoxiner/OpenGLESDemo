@@ -1,21 +1,30 @@
 precision mediump float;
+uniform vec3 uViewPos;
+uniform vec3 uLightPos;
+struct Material
+{
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shiness;
+};
+uniform Material uMaterial;
+
 varying vec3 fragPos;
 varying vec3 normal;
 void main()
 {
-//    gl_FragColor = vec4(vec3(normalize(normal)*0.5+0.5),1.0);
-//    gl_FragColor = vec4(0.5,0.5,0.5,1.0);
-
+    vec3 ambient = uMaterial.ambient;
+    // diffuse
     vec3 norm = normalize(normal);
-    vec3 lightPos = vec3(0,2,0);
-    vec3 lightDir = normalize(lightPos - fragPos);
-
-    vec3 viewPos = vec3(0,0,2);
-    vec3 viewDir = normalize(viewPos - fragPos);
-    vec3 reflectDir = normalize(reflect(-lightDir,norm));
-
+    vec3 lightDir = normalize(uLightPos - fragPos);
     float diff = max(dot(lightDir,norm),0.0);
-    float spec = pow(max(dot(viewDir,reflectDir),0.0),32);
+    vec3 diffuse = diff * uMaterial.diffuse;
+    // specular
+    vec3 viewDir = normalize(uViewPos - fragPos);
+    vec3 reflectDir = normalize(reflect(-lightDir,norm));
+    float spec = pow(max(dot(viewDir,reflectDir),0.0),uMaterial.shiness);
+    vec3 specular = spec*uMaterial.specular;
 
-    gl_FragColor = vec4(vec3(spec+diff+0.1),1.0);
+    gl_FragColor = vec4(vec3(ambient + diffuse + specular),1.0);
 }
