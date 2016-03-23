@@ -9,7 +9,6 @@ struct Material
     float shiness;
 };
 uniform Material uMaterial;
-
 varying vec3 fragPos;
 varying vec3 normal;
 void main()

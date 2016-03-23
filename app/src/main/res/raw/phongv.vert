@@ -3,9 +3,9 @@ uniform mat4 uModel;
 
 attribute vec3 vPosition;
 attribute vec3 vNormal;
-attribute vec2 vUv;
 varying vec3 fragPos;
 varying vec3 normal;
+
 void main()
 {
     gl_Position = uCamera * uModel * vec4(vPosition,1.0);

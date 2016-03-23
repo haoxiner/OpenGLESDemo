@@ -8,26 +8,21 @@ import android.view.MotionEvent;
  * Created by hx on 16/3/4.
  */
 public class CustomGLSurfaceView extends GLSurfaceView {
-    private final CustomGLRenderer glRenderer;
+    private float previousX;
+    private float previousY;
+    private float[] from = new float[4];
+    private float[] to = new float[4];
+
+    private CustomGLRenderer glRenderer;
 
     public CustomGLSurfaceView(Context context) {
         super(context);
         setEGLContextClientVersion(2);
         glRenderer = new CustomGLRenderer(context);
-
         setRenderer(glRenderer);
-
         // Render the view only when there is a change in the drawing data
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
-
-    private float previousX;
-    private float previousY;
-    private float[] v0 = new float[4];
-    private float[] v1 = new float[4];
-
-    private float slideOldX, slideOldY;
-    private boolean slide;
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -40,28 +35,16 @@ public class CustomGLSurfaceView extends GLSurfaceView {
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_MOVE:
-//                if (slide) {
-//                    slide = false;
-//                    if (Math.abs(e.getX() - slideOldX) > getWidth() / 3) {
-//                        glRenderer.switchModel();
-//                    }
-//                } else {
-                v0[0] = previousX;
-                v0[1] = previousY;
-                v1[0] = currentX;
-                v1[1] = currentY;
-                glRenderer.rotateArcball(v0, v1);
-                requestRender();
-//                }
+                if (Math.abs(currentX - previousX) > 0.001f || Math.abs(currentY - previousY) > 0.001f) {
+                    from[0] = previousX;
+                    from[1] = previousY;
+                    to[0] = currentX;
+                    to[1] = currentY;
+                    glRenderer.rotateArcball(from, to);
+                    requestRender();
+                }
                 break;
-//            case MotionEvent.ACTION_POINTER_DOWN:
-//                slideOldX = e.getX();
-//                slideOldY = e.getY();
-//                slide = true;
-//                break;
-//            case MotionEvent.ACTION_POINTER_UP:
-//                slide = false;
-//                break;
+
             default:
         }
 
