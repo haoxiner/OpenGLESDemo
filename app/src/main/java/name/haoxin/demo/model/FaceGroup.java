@@ -1,19 +1,19 @@
 package name.haoxin.demo.model;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.List;
 
-import name.haoxin.demo.ShaderProgram;
+import name.haoxin.demo.shader.ShaderProgram;
 
 import static android.opengl.GLES20.GL_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_STATIC_DRAW;
+import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.GL_TRIANGLES;
 import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glBufferData;
 import static android.opengl.GLES20.glDisableVertexAttribArray;
 import static android.opengl.GLES20.glDrawArrays;
@@ -25,20 +25,20 @@ import static android.opengl.GLES20.glVertexAttribPointer;
  * Created by hx on 16/3/23.
  */
 public class FaceGroup {
-    private static final int BYTE_PER_FLOAT = 4;
-    private static final int FLOAT_PER_POSITION = 3;
-    private static final int FLOAT_PER_NORMAL = 3;
-    private static final int FLOAT_PER_UV = 2;
+    protected static final int BYTE_PER_FLOAT = 4;
+    protected static final int FLOAT_PER_POSITION = 3;
+    protected static final int FLOAT_PER_NORMAL = 3;
+    protected static final int FLOAT_PER_UV = 2;
 
-    private static final int POSITION_OFFSET = 0;
-    private static final int NORMAL_OFFSET = POSITION_OFFSET + FLOAT_PER_POSITION * BYTE_PER_FLOAT;
-    private static final int UV_OFFSET = NORMAL_OFFSET + FLOAT_PER_NORMAL * BYTE_PER_FLOAT;
-    private int STRIDE;
+    protected static final int POSITION_OFFSET = 0;
+    protected static final int NORMAL_OFFSET = POSITION_OFFSET + FLOAT_PER_POSITION * BYTE_PER_FLOAT;
+    protected static final int UV_OFFSET = NORMAL_OFFSET + FLOAT_PER_NORMAL * BYTE_PER_FLOAT;
+    protected int STRIDE;
 
-    private int[] bufferObjects;
-    private Material material;
-    private int vertexCount;
-    private boolean hasUVCoordinates;
+    protected int[] bufferObjects;
+    protected Material material;
+    protected int vertexCount;
+    protected boolean hasUVCoordinates;
 
     public FaceGroup(List<Float> vertices, List<Float> uvCoordinates, List<Float> normals, Material material) {
         this.material = material;
@@ -77,6 +77,7 @@ public class FaceGroup {
     }
 
     public void draw(ShaderProgram shaderProgram) {
+        shaderProgram.use();
         shaderProgram.setMaterial(material);
         glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[0]);
         glEnableVertexAttribArray(shaderProgram.getPositionLocation());
@@ -86,14 +87,17 @@ public class FaceGroup {
         if (hasUVCoordinates) {
             glEnableVertexAttribArray(shaderProgram.getUVLocation());
             glVertexAttribPointer(shaderProgram.getUVLocation(), FLOAT_PER_UV, GL_FLOAT, false, STRIDE, UV_OFFSET);
+            glBindTexture(GL_TEXTURE_2D, material.textureID[0]);
         }
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
         if (hasUVCoordinates) {
             glDisableVertexAttribArray(shaderProgram.getUVLocation());
+            glBindTexture(GL_TEXTURE_2D, 0);
         }
         glDisableVertexAttribArray(shaderProgram.getNormalLocation());
         glDisableVertexAttribArray(shaderProgram.getPositionLocation());
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        shaderProgram.release();
     }
 
 }

@@ -1,4 +1,4 @@
-package name.haoxin.demo;
+package name.haoxin.demo.shader;
 
 import static android.opengl.GLES20.glCompileShader;
 import static android.opengl.GLES20.glCreateShader;

@@ -1,10 +1,8 @@
 package name.haoxin.demo.model;
 
-import android.content.res.AssetManager;
-
 import java.util.List;
 
-import name.haoxin.demo.ShaderProgram;
+import name.haoxin.demo.shader.ShaderProgram;
 
 /**
  * Created by hx on 16/3/6.

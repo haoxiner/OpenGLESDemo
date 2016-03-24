@@ -1,19 +1,17 @@
 package name.haoxin.demo;
 
 import android.content.Context;
-import android.opengl.Matrix;
 
 import static android.opengl.GLES20.*;
 
 import android.opengl.GLSurfaceView;
-import android.util.Log;
-
-import java.io.IOException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import name.haoxin.demo.model.Model;
+import name.haoxin.demo.shader.Shader;
+import name.haoxin.demo.shader.ShaderProgram;
 import name.haoxin.demo.util.ObjLoader;
 import name.haoxin.demo.util.TextResourceReader;
 
@@ -44,11 +42,9 @@ public class CustomGLRenderer implements GLSurfaceView.Renderer {
         glCullFace(GL_BACK);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         // model
-        try {
-            model = ObjLoader.load("smoothpot.obj", context.getAssets());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        model = ObjLoader.load("teapot.obj", context.getAssets());
+
         distance = 150;
         // shader
         Shader vShader = new Shader(GL_VERTEX_SHADER, TextResourceReader.readTextFileFromResource(context, R.raw.phongv));

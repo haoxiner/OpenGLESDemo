@@ -1,15 +1,19 @@
-package name.haoxin.demo;
-
-import android.opengl.GLES20;
+package name.haoxin.demo.shader;
 
 import name.haoxin.demo.model.Material;
+import name.haoxin.demo.shader.Shader;
 
+import static android.opengl.GLES20.GL_FALSE;
+import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.GL_TRUE;
+import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glAttachShader;
 import static android.opengl.GLES20.glCreateProgram;
 import static android.opengl.GLES20.glDeleteProgram;
 import static android.opengl.GLES20.glGetAttribLocation;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1f;
+import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniform3f;
 import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glUniform3fv;
@@ -33,7 +37,11 @@ public class ShaderProgram {
 
     private int uLightPos;
 
+    private int uHasTexture;
+    private int uTexture;
+
     private int vPosition, vNormal, vTextureUV;
+
 
     public ShaderProgram(Shader vertexShader, Shader fragmentShader) {
         id = glCreateProgram();
@@ -51,6 +59,8 @@ public class ShaderProgram {
         uShiness = glGetUniformLocation(id, "uMaterial.shiness");
         // light
         uLightPos = glGetUniformLocation(id, "uLightPos");
+        // texture
+        uHasTexture = glGetUniformLocation(id, "uHasTexture");
         // attribute
         vPosition = glGetAttribLocation(id, "vPosition");
         vNormal = glGetAttribLocation(id, "vNormal");
@@ -88,6 +98,11 @@ public class ShaderProgram {
         glUniform3fv(uSpecular, 1, material.specular, 0);
         glUniform3fv(uDiffuse, 1, material.diffuse, 0);
         glUniform1f(uShiness, material.shiness);
+        if (material.hasTexture) {
+            glUniform1i(uHasTexture, GL_TRUE);
+        } else {
+            glUniform1i(uHasTexture, GL_FALSE);
+        }
     }
 
     public void setLightPosition(float x, float y, float z) {
@@ -105,4 +120,5 @@ public class ShaderProgram {
     public int getUVLocation() {
         return vTextureUV;
     }
+
 }

@@ -22,9 +22,9 @@ import name.haoxin.demo.model.Model;
  * Created by hx on 16/3/6.
  */
 public class ObjLoader {
-    public static Map<String, Material> loadMtl(InputStream inputStream) throws IOException {
+    public static Map<String, Material> loadMtl(String filename, AssetManager assetManager) throws IOException {
         Map<String, Material> mtlMap = new HashMap<>();
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        InputStreamReader inputStreamReader = new InputStreamReader(assetManager.open(filename));
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String line;
         Material material = null;
@@ -60,26 +60,26 @@ public class ObjLoader {
                 String shiness = line.substring(3).trim();
                 material.shiness = Float.parseFloat(shiness);
             } else if (line.startsWith("map_Kd ")) {
-                material.textureFileName = line.substring(7).trim();
+                String textureFileName = line.substring(7).trim();
+                material.loadTexture(assetManager.open(textureFileName));
             }
         }
 
-        if (material != null)
-
-        {
+        if (material != null) {
             mtlMap.put(materialName, material);
         }
 
         return mtlMap;
     }
 
-    public static Model load(String filename, AssetManager assetManager) throws IOException {
-        InputStream inputStream = assetManager.open(filename);
-//        byte[] buffer = new byte[inputStream.available()];
-//        inputStream.read(buffer);
-//        inputStream.close();
-//
-//        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
+    public static Model load(String filename, AssetManager assetManager) {
+        InputStream inputStream = null;
+        try {
+            inputStream = assetManager.open(filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
@@ -100,85 +100,105 @@ public class ObjLoader {
 
         List<FaceGroup> faceGroups = new ArrayList<>();
 
-        while ((line = bufferedReader.readLine()) != null) {
-            line = line.trim();
-            if (line.length() == 0) {
-                continue;
-            }
-            if (line.startsWith("v ")) {
-                String[] floatStr = line.substring(2).trim().split(" ");
-                for (String str : floatStr) {
-                    verticesTable.add(Float.parseFloat(str));
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+                if (line.length() == 0) {
+                    continue;
                 }
-            } else if (line.startsWith("vn ")) {
-                String[] floatStr = line.substring(3).trim().split(" ");
-                for (String str : floatStr) {
-                    normalsTable.add(Float.parseFloat(str));
-                }
-            } else if (line.startsWith("vt ")) {
-                String[] floatStr = line.substring(3).trim().split(" ");
-                for (String str : floatStr) {
-                    uvCoordinatesTable.add(Float.parseFloat(str));
-                }
-            } else if (line.startsWith("f ")) {
-                String[] vertexStr = line.substring(2).trim().split(" ");
-                if (vertexStr.length == 3) {
-                    for (String str : vertexStr) {
-                        String[] valueArray = str.split("/");
-                        if (valueArray.length > 0 && valueArray[0].length() > 0) {
-                            int value = Integer.parseInt(valueArray[0]);
-                            if (value > 0) {
-                                --value;
-                            } else {
-                                value += (verticesTable.size() / 3);
+                if (line.startsWith("v ")) {
+                    String[] floatStr = line.substring(2).trim().split(" ");
+                    for (String str : floatStr) {
+                        verticesTable.add(Float.parseFloat(str));
+                    }
+                } else if (line.startsWith("vn ")) {
+                    String[] floatStr = line.substring(3).trim().split(" ");
+                    for (String str : floatStr) {
+                        normalsTable.add(Float.parseFloat(str));
+                    }
+                } else if (line.startsWith("vt ")) {
+                    String[] floatStr = line.substring(3).trim().split(" ");
+                    for (String str : floatStr) {
+                        uvCoordinatesTable.add(Float.parseFloat(str));
+                    }
+                } else if (line.startsWith("f ")) {
+                    String[] vertexStr = line.substring(2).trim().split(" ");
+                    if (vertexStr.length == 3) {
+                        for (String str : vertexStr) {
+                            String[] valueArray = str.split("/");
+                            if (valueArray.length > 0 && valueArray[0].length() > 0) {
+                                int value = Integer.parseInt(valueArray[0]);
+                                if (value > 0) {
+                                    --value;
+                                } else {
+                                    value += (verticesTable.size() / 3);
+                                }
+                                vertices.add(verticesTable.get(value * 3));
+                                vertices.add(verticesTable.get(value * 3 + 1));
+                                vertices.add(verticesTable.get(value * 3 + 2));
                             }
-                            vertices.add(verticesTable.get(value * 3));
-                            vertices.add(verticesTable.get(value * 3 + 1));
-                            vertices.add(verticesTable.get(value * 3 + 2));
-                        }
-                        if (valueArray.length > 1 && valueArray[1].length() > 0) {
-                            int value = Integer.parseInt(valueArray[1]);
-                            if (value > 0) {
-                                --value;
-                            } else {
-                                value += (uvCoordinatesTable.size() / 2);
+                            if (valueArray.length > 1 && valueArray[1].length() > 0) {
+                                int value = Integer.parseInt(valueArray[1]);
+                                if (value > 0) {
+                                    --value;
+                                } else {
+                                    value += (uvCoordinatesTable.size() / 2);
+                                }
+                                uvCoordinates.add(uvCoordinatesTable.get(value * 2));
+                                uvCoordinates.add(uvCoordinatesTable.get(value * 2 + 1));
                             }
-                            uvCoordinates.add(uvCoordinatesTable.get(value * 2));
-                            uvCoordinates.add(uvCoordinatesTable.get(value * 2 + 1));
-                        }
-                        if (valueArray.length > 2 && valueArray[2].length() > 0) {
-                            int value = Integer.parseInt(valueArray[2]);
-                            if (value > 0) {
-                                --value;
-                            } else {
-                                value += (normalsTable.size() / 3);
+                            if (valueArray.length > 2 && valueArray[2].length() > 0) {
+                                int value = Integer.parseInt(valueArray[2]);
+                                if (value > 0) {
+                                    --value;
+                                } else {
+                                    value += (normalsTable.size() / 3);
+                                }
+                                normals.add(normalsTable.get(value * 3));
+                                normals.add(normalsTable.get(value * 3 + 1));
+                                normals.add(normalsTable.get(value * 3 + 2));
                             }
-                            normals.add(normalsTable.get(value * 3));
-                            normals.add(normalsTable.get(value * 3 + 1));
-                            normals.add(normalsTable.get(value * 3 + 2));
                         }
                     }
-                }
-            } else if (line.startsWith("usemtl ")) {
-                if (!vertices.isEmpty()) {
-                    faceGroup = new FaceGroup(vertices, uvCoordinates, normals, material);
-                    faceGroups.add(faceGroup);
-                }
-                vertices.clear();
-                uvCoordinates.clear();
-                normals.clear();
+                } else if (line.startsWith("usemtl ")) {
+                    if (!vertices.isEmpty()) {
+                        faceGroup = new FaceGroup(vertices, uvCoordinates, normals, material);
+                        faceGroups.add(faceGroup);
+                    }
+                    vertices.clear();
+                    uvCoordinates.clear();
+                    normals.clear();
 
-                String materialName = line.substring(7).trim();
-                if (mtlMap != null && mtlMap.containsKey(materialName)) {
-                    material = mtlMap.get(materialName);
+                    String materialName = line.substring(7).trim();
+                    if (mtlMap != null && mtlMap.containsKey(materialName)) {
+                        material = mtlMap.get(materialName);
+                    }
+                } else if (line.startsWith("mtllib ")) {
+                    String mtlFileName = line.substring(7).trim();
+                    try {
+                        mtlMap = loadMtl(mtlFileName, assetManager);
+                    } catch (IOException e) {
+                        mtlMap = null;
+                    }
                 }
-            } else if (line.startsWith("mtllib ")) {
-                String mtlFileName = line.substring(7).trim();
-                try {
-                    mtlMap = loadMtl(assetManager.open(mtlFileName));
-                } catch (IOException e) {
-                    mtlMap = null;
-                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bufferedReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                inputStreamReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
