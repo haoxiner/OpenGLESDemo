@@ -9,7 +9,7 @@ public class ArcBall {
 
     private final float[] arcballMatrix = new float[16];
     private final float[] modelToWorld = new float[16];
-    private final float[] translate = new float[16];
+    private final float[] translateBack = new float[16];
     private final float[] rotateTranslate = new float[16];
     private final float[] from = new float[4];
     private final float[] to = new float[4];
@@ -55,15 +55,15 @@ public class ArcBall {
         Matrix.multiplyMV(from, 0, inverseModelMat, 0, v0, 0);
         Matrix.multiplyMV(to, 0, inverseModelMat, 0, v1, 0);
 
-        Matrix.setIdentityM(translate, 0);
-        Matrix.translateM(translate, 0, -centerX, -centerY, -centerZ);
         float crossX = from[1] * to[2] - from[2] * to[1];
         float crossY = from[2] * to[0] - from[0] * to[2];
         float crossZ = from[0] * to[1] - from[1] * to[0];
         Matrix.rotateM(arcballMatrix, 0, angle, crossX, crossY, crossZ);
-        Matrix.multiplyMM(rotateTranslate, 0, arcballMatrix, 0, translate, 0);
-        Matrix.setIdentityM(translate, 0);
-        Matrix.translateM(translate, 0, centerX, centerY, centerZ);
-        Matrix.multiplyMM(modelToWorld, 0, translate, 0, rotateTranslate, 0);
+        Matrix.translateM(arcballMatrix, 0, -centerX, -centerY, -centerZ);
+        Matrix.setIdentityM(translateBack, 0);
+        Matrix.translateM(translateBack, 0, centerX, centerY, centerZ);
+        Matrix.multiplyMM(modelToWorld, 0, translateBack, 0, arcballMatrix, 0);
+
+        Matrix.translateM(arcballMatrix, 0, centerX, centerY, centerZ);
     }
 }
